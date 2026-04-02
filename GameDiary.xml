@@ -1,0 +1,1198 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+
+<!-- ============================================================ -->
+<!-- GameDiary.xml - 游戏日记本 UI 布局                            -->
+<!-- 翻书式界面：左侧列表页 + 右侧内容页                           -->
+<!-- ============================================================ -->
+
+<!-- ============================================================ -->
+<!-- 主框架                                                        -->
+<!-- ============================================================ -->
+<Frame name="GameDiaryFrame" toplevel="true" movable="true"
+       enableMouse="true" parent="UIParent" hidden="true"
+       frameStrata="DIALOG">
+    <Size>
+        <AbsDimension x="760" y="560"/>
+    </Size>
+    <Anchors>
+        <Anchor point="CENTER"/>
+    </Anchors>
+    <Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background"
+              edgeFile="Interface\DialogFrame\UI-DialogBox-Border"
+              tile="true">
+      
+        <BackgroundInsets>
+            <AbsInset left="11" right="12" top="12" bottom="11"/>
+        </BackgroundInsets>
+        <TileSize>
+            <AbsValue val="32"/>
+        </TileSize>
+        <EdgeSize>
+            <AbsValue val="32"/>
+        </EdgeSize>
+    </Backdrop>
+    
+    <Scripts>
+        <OnLoad>GD_OnLoad();</OnLoad>
+        <OnEvent>GD_OnEvent(event);</OnEvent>
+        <OnShow>GD_OnShow();</OnShow>
+        <OnHide>GD_OnHide();</OnHide>
+        <OnDragStart>this:StartMoving();</OnDragStart>
+        <OnDragStop>this:StopMovingOrSizing();</OnDragStop>
+    </Scripts>
+
+    <Layers>
+        <!-- 标题 -->
+        <Layer level="ARTWORK">
+            <FontString name="GD_MainTitle" inherits="GameFontNormalLarge" text="游戏日记本">
+                <Anchors>
+                    <Anchor point="TOPLEFT">
+                        <Offset><AbsDimension x="20" y="-20"/></Offset>
+                    </Anchor>
+                </Anchors>
+            </FontString>
+        </Layer>
+    </Layers>
+
+    <Frames>
+        <!-- 关闭按钮 -->
+        <Button name="GD_CloseBtn" inherits="UIPanelCloseButton">
+            <Anchors>
+                <Anchor point="TOPRIGHT">
+                    <Offset><AbsDimension x="-5" y="-5"/></Offset>
+                </Anchor>
+            </Anchors>
+            <Scripts>
+                <OnClick>GameDiaryFrame:Hide();</OnClick>
+            </Scripts>
+        </Button>
+
+        <!-- ====================================================== -->
+        <!-- 顶部栏：日记本选择 + 管理按钮                             -->
+        <!-- ====================================================== -->
+        <Frame name="GD_TopBar">
+            <Size>
+                <AbsDimension x="730" y="35"/>
+            </Size>
+            <Anchors>
+                <Anchor point="TOPLEFT">
+                    <Offset><AbsDimension x="0" y="-50"/></Offset>
+                </Anchor>
+            </Anchors>
+
+            <Frames>
+                <!-- 日记本下拉菜单 -->
+                <Frame name="GD_BookDropDown" inherits="UIDropDownMenuTemplate" enableMouse="true">
+                    <Anchors>
+                        <Anchor point="LEFT">
+                            <Offset><AbsDimension x="0" y="0"/></Offset>
+                        </Anchor>
+                    </Anchors>
+                </Frame>
+
+                <!-- 新建日记本按钮 -->
+                <Button name="GD_NewBookBtn" inherits="UIPanelButtonTemplate" text="新建">
+                    <Size>
+                        <AbsDimension x="55" y="24"/>
+                    </Size>
+                    <Anchors>
+                        <Anchor point="LEFT" relativeTo="GD_BookDropDown" relativePoint="RIGHT">
+                            <Offset><AbsDimension x="8" y="2"/></Offset>
+                        </Anchor>
+                    </Anchors>
+                    <Scripts>
+                        <OnClick>StaticPopup_Show("GD_NEW_BOOK");</OnClick>
+                    </Scripts>
+                    <NormalFont style="GameFontNormalSmall"/>
+                    <HighlightFont style="GameFontHighlightSmall"/>
+                    <DisabledFont style="GameFontDisableSmall"/>
+                </Button>
+
+                <!-- 重命名按钮 -->
+                <Button name="GD_RenameBookBtn" inherits="UIPanelButtonTemplate" text="重命名">
+                    <Size>
+                        <AbsDimension x="60" y="24"/>
+                    </Size>
+                    <Anchors>
+                        <Anchor point="LEFT" relativeTo="GD_NewBookBtn" relativePoint="RIGHT">
+                            <Offset><AbsDimension x="5" y="0"/></Offset>
+                        </Anchor>
+                    </Anchors>
+                    <Scripts>
+                        <OnClick>GD_OnRenameBook();</OnClick>
+                    </Scripts>
+                    <NormalFont style="GameFontNormalSmall"/>
+                    <HighlightFont style="GameFontHighlightSmall"/>
+                    <DisabledFont style="GameFontDisableSmall"/>
+                </Button>
+
+                <!-- 删除日记本按钮 -->
+                <Button name="GD_DeleteBookBtn" inherits="UIPanelButtonTemplate" text="删除">
+                    <Size>
+                        <AbsDimension x="50" y="24"/>
+                    </Size>
+                    <Anchors>
+                        <Anchor point="LEFT" relativeTo="GD_RenameBookBtn" relativePoint="RIGHT">
+                            <Offset><AbsDimension x="5" y="0"/></Offset>
+                        </Anchor>
+                    </Anchors>
+                    <Scripts>
+                        <OnClick>GD_OnDeleteBook();</OnClick>
+                    </Scripts>
+                    <NormalFont style="GameFontNormalSmall"/>
+                    <HighlightFont style="GameFontHighlightSmall"/>
+                    <DisabledFont style="GameFontDisableSmall"/>
+                </Button>
+            </Frames>
+        </Frame>
+
+        <!-- ====================================================== -->
+        <!-- 左侧面板：搜索、筛选、记录列表、分页                       -->
+        <!-- ====================================================== -->
+      
+        <Frame name="GD_LeftPanel" >
+            <Size>
+                <AbsDimension x="300" y="420"/>
+            </Size>
+            <Anchors>
+                <Anchor point="TOPLEFT" relativeTo="GameDiaryFrame" relativePoint="TOPLEFT">
+                    <Offset><AbsDimension x="15" y="-90"/></Offset>
+                </Anchor>
+            </Anchors>
+
+          <Backdrop bgFile="Interface\AddOns\GameDiary\media\ui\bg-book-left"
+          edgeFile="Interface\Tooltips\UI-Tooltip-Border"
+          tile="true">
+                <BackgroundInsets>
+                    <AbsInset left="3" right="3" top="3" bottom="3"/>
+                </BackgroundInsets>
+                <TileSize>
+                    <AbsValue val="512"/>
+                </TileSize>
+                <EdgeSize>
+                    <AbsValue val="12"/>
+                </EdgeSize>
+                <BorderColor r="0.4" g="0.3" b="0.1" a="1"/>
+            </Backdrop>
+            
+            <Frames>
+                <!-- 搜索框 -->
+                <EditBox name="GD_SearchBox" letters="50" autoFocus="false" historyLines="0">
+                    <Size>
+                        <AbsDimension x="280" y="30"/>
+                    </Size>
+                    <Anchors>
+                        <Anchor point="TOPLEFT">
+                            <Offset><AbsDimension x="10" y="-8"/></Offset>
+                        </Anchor>
+                    </Anchors>
+                    <FontString inherits="GameFontHighlight"/>
+                    <Scripts>
+                        <OnTextChanged>GD_SearchBox_OnTextChanged();</OnTextChanged>
+                        <OnEscapePressed>
+                            this:ClearFocus();
+                        </OnEscapePressed>
+                    </Scripts>
+                     <TextInsets>
+                        <AbsInset left="15" right="8" top="2" bottom="2"/>
+                    </TextInsets>
+                    <Layers>
+                        <Layer level="BACKGROUND">
+                            <Texture name="$parentBg" file="Interface\ChatFrame\UI-ChatInputBorder-Left">
+                                <Size>
+                                    <AbsDimension x="280" y="30"/>
+                                </Size>
+                                <Anchors>
+                                    <Anchor point="TOPLEFT"/>
+                                </Anchors>
+                                <TexCoords left="0" right="1" top="0" bottom="1"/>
+                            </Texture>
+                        </Layer>
+                        <Layer level="ARTWORK">
+                            <FontString name="$parentPlaceholder" inherits="GameFontDisable" text="搜索记录...">
+                                <Anchors>
+                                    <Anchor point="LEFT">
+                                        <Offset><AbsDimension x="10" y="0"/></Offset>
+                                    </Anchor>
+                                </Anchors>
+                            </FontString>
+                        </Layer>
+                    </Layers>
+                </EditBox>
+
+                <!-- 筛选按钮行 -->
+                <Button name="GD_FilterAllBtn" inherits="UIPanelButtonTemplate" text="全部">
+                    <Size>
+                        <AbsDimension x="65" y="22"/>
+                    </Size>
+                    <Anchors>
+                        <Anchor point="TOPLEFT">
+                            <Offset><AbsDimension x="10" y="-38"/></Offset>
+                        </Anchor>
+                    </Anchors>
+                    <Scripts>
+                        <OnClick>GD_SetFilterType("all");</OnClick>
+                    </Scripts>
+                    <NormalFont style="GameFontNormalSmall"/>
+                    <HighlightFont style="GameFontHighlightSmall"/>
+                    <DisabledFont style="GameFontDisableSmall"/>
+                </Button>
+
+                <Button name="GD_FilterPitfallBtn" inherits="UIPanelButtonTemplate" text="坑点">
+                    <Size>
+                        <AbsDimension x="65" y="22"/>
+                    </Size>
+                    <Anchors>
+                        <Anchor point="LEFT" relativeTo="GD_FilterAllBtn" relativePoint="RIGHT">
+                            <Offset><AbsDimension x="5" y="0"/></Offset>
+                        </Anchor>
+                    </Anchors>
+                    <Scripts>
+                        <OnClick>GD_SetFilterType("pitfall");</OnClick>
+                    </Scripts>
+                    <NormalFont style="GameFontNormalSmall"/>
+                    <HighlightFont style="GameFontHighlightSmall"/>
+                    <DisabledFont style="GameFontDisableSmall"/>
+                </Button>
+
+                <Button name="GD_FilterFunBtn" inherits="UIPanelButtonTemplate" text="趣事">
+                    <Size>
+                        <AbsDimension x="65" y="22"/>
+                    </Size>
+                    <Anchors>
+                        <Anchor point="LEFT" relativeTo="GD_FilterPitfallBtn" relativePoint="RIGHT">
+                            <Offset><AbsDimension x="5" y="0"/></Offset>
+                        </Anchor>
+                    </Anchors>
+                    <Scripts>
+                        <OnClick>GD_SetFilterType("fun");</OnClick>
+                    </Scripts>
+                    <NormalFont style="GameFontNormalSmall"/>
+                    <HighlightFont style="GameFontHighlightSmall"/>
+                    <DisabledFont style="GameFontDisableSmall"/>
+                </Button>
+
+                <!-- 排序按钮（UIPanelButtonTemplate自带$parentText） -->
+                <Button name="GD_SortBtn" inherits="UIPanelButtonTemplate" text="最新优先">
+                    <Size>
+                        <AbsDimension x="75" y="22"/>
+                    </Size>
+                    <Anchors>
+                        <Anchor point="LEFT" relativeTo="GD_FilterFunBtn" relativePoint="RIGHT">
+                            <Offset><AbsDimension x="5" y="0"/></Offset>
+                        </Anchor>
+                    </Anchors>
+                    <Scripts>
+                        <OnClick>GD_ToggleSortOrder();</OnClick>
+                    </Scripts>
+                    <NormalFont style="GameFontNormalSmall"/>
+                    <HighlightFont style="GameFontHighlightSmall"/>
+                    <DisabledFont style="GameFontDisableSmall"/>
+                </Button>
+
+               
+
+                <!-- 记录列表项 1-6 -->
+                <Button name="GD_RecordButton1">
+                    <Size><AbsDimension x="270" y="34"/></Size>
+                    <Anchors><Anchor point="TOPLEFT"><Offset><AbsDimension x="10" y="-72"/></Offset></Anchor></Anchors>
+                    <Scripts><OnClick>GD_OnRecordClick(this:GetID());</OnClick></Scripts>
+                    <Layers>
+                        <Layer level="BACKGROUND">
+                            <Texture name="$parentSelectedBg"  hidden="true">
+                                <Color r="0.3" g="0.2" b="0.0" a="0.5"/>
+                                <Anchors><Anchor point="TOPLEFT"/><Anchor point="BOTTOMRIGHT"/></Anchors>
+                            </Texture>
+                        </Layer>
+                        <Layer level="HIGHLIGHT">
+                            <Texture >
+                               <Color r="0.3" g="0.2" b="0.0" a="0.5"/>
+                                <Anchors><Anchor point="TOPLEFT"/><Anchor point="BOTTOMRIGHT"/></Anchors>
+                            </Texture>
+                        </Layer>
+                        <Layer level="ARTWORK">
+                            <FontString name="$parentType" inherits="GameFontNormalSmall" justifyH="CENTER">
+                                <Size><AbsDimension x="35" y="14"/></Size>
+                                <Anchors><Anchor point="LEFT"><Offset><AbsDimension x="2" y="0"/></Offset></Anchor></Anchors>
+                            </FontString>
+                            <FontString name="$parentTitle" inherits="GameFontNormalSmall" justifyH="LEFT">
+                                <Size><AbsDimension x="170" y="14"/></Size>
+                                <Anchors><Anchor point="LEFT"><Offset><AbsDimension x="40" y="0"/></Offset></Anchor></Anchors>
+                            </FontString>
+                            <FontString name="$parentTime" inherits="GameFontDisableSmall" justifyH="RIGHT">
+                                <Size><AbsDimension x="55" y="14"/></Size>
+                                <Anchors><Anchor point="RIGHT"><Offset><AbsDimension x="-2" y="0"/></Offset></Anchor></Anchors>
+                            </FontString>
+                        </Layer>
+                    </Layers>
+                </Button>
+
+                <Button name="GD_RecordButton2">
+                    <Size><AbsDimension x="270" y="34"/></Size>
+                    <Anchors><Anchor point="TOPLEFT" relativeTo="GD_RecordButton1" relativePoint="BOTTOMLEFT"><Offset><AbsDimension x="0" y="-2"/></Offset></Anchor></Anchors>
+                    <Scripts><OnClick>GD_OnRecordClick(this:GetID());</OnClick></Scripts>
+                    <Layers>
+                        <Layer level="BACKGROUND">
+                            <Texture name="$parentSelectedBg"  hidden="true">
+                                <Color r="0.3" g="0.2" b="0.0" a="0.5"/>
+                                <Anchors><Anchor point="TOPLEFT"/><Anchor point="BOTTOMRIGHT"/></Anchors>
+                            </Texture>
+                        </Layer>
+                        <Layer level="HIGHLIGHT">
+                            <Texture >
+                                <Color r="0.3" g="0.2" b="0.0" a="0.5"/>
+                                <Anchors><Anchor point="TOPLEFT"/><Anchor point="BOTTOMRIGHT"/></Anchors>
+                            </Texture>
+                        </Layer>
+                        <Layer level="ARTWORK">
+                            <FontString name="$parentType" inherits="GameFontNormalSmall" justifyH="CENTER">
+                                <Size><AbsDimension x="35" y="14"/></Size>
+                                <Anchors><Anchor point="LEFT"><Offset><AbsDimension x="2" y="0"/></Offset></Anchor></Anchors>
+                            </FontString>
+                            <FontString name="$parentTitle" inherits="GameFontNormalSmall" justifyH="LEFT">
+                                <Size><AbsDimension x="170" y="14"/></Size>
+                                <Anchors><Anchor point="LEFT"><Offset><AbsDimension x="40" y="0"/></Offset></Anchor></Anchors>
+                            </FontString>
+                            <FontString name="$parentTime" inherits="GameFontDisableSmall" justifyH="RIGHT">
+                                <Size><AbsDimension x="55" y="14"/></Size>
+                                <Anchors><Anchor point="RIGHT"><Offset><AbsDimension x="-2" y="0"/></Offset></Anchor></Anchors>
+                            </FontString>
+                        </Layer>
+                    </Layers>
+                </Button>
+
+                <Button name="GD_RecordButton3">
+                    <Size><AbsDimension x="270" y="34"/></Size>
+                    <Anchors><Anchor point="TOPLEFT" relativeTo="GD_RecordButton2" relativePoint="BOTTOMLEFT"><Offset><AbsDimension x="0" y="-2"/></Offset></Anchor></Anchors>
+                    <Scripts><OnClick>GD_OnRecordClick(this:GetID());</OnClick></Scripts>
+                    <Layers>
+                        <Layer level="BACKGROUND">
+                            <Texture name="$parentSelectedBg"  hidden="true">
+                                <Color r="0.3" g="0.2" b="0.0" a="0.5"/>
+                                <Anchors><Anchor point="TOPLEFT"/><Anchor point="BOTTOMRIGHT"/></Anchors>
+                            </Texture>
+                        </Layer>
+                        <Layer level="HIGHLIGHT">
+                            <!-- <Texture file="Interface\Buttons\UI-ListButton-Highlight" alphaMode="ADD"> -->
+                             <Texture >
+                                 <Color r="0.3" g="0.2" b="0.0" a="0.5"/>
+                                <Anchors><Anchor point="TOPLEFT"/><Anchor point="BOTTOMRIGHT"/></Anchors>
+                            </Texture>
+                        </Layer>
+                        <Layer level="ARTWORK">
+                            <FontString name="$parentType" inherits="GameFontNormalSmall" justifyH="CENTER">
+                                <Size><AbsDimension x="35" y="14"/></Size>
+                                <Anchors><Anchor point="LEFT"><Offset><AbsDimension x="2" y="0"/></Offset></Anchor></Anchors>
+                            </FontString>
+                            <FontString name="$parentTitle" inherits="GameFontNormalSmall" justifyH="LEFT">
+                                <Size><AbsDimension x="170" y="14"/></Size>
+                                <Anchors><Anchor point="LEFT"><Offset><AbsDimension x="40" y="0"/></Offset></Anchor></Anchors>
+                            </FontString>
+                            <FontString name="$parentTime" inherits="GameFontDisableSmall" justifyH="RIGHT">
+                                <Size><AbsDimension x="55" y="14"/></Size>
+                                <Anchors><Anchor point="RIGHT"><Offset><AbsDimension x="-2" y="0"/></Offset></Anchor></Anchors>
+                            </FontString>
+                        </Layer>
+                    </Layers>
+                </Button>
+
+                <Button name="GD_RecordButton4">
+                    <Size><AbsDimension x="270" y="34"/></Size>
+                    <Anchors><Anchor point="TOPLEFT" relativeTo="GD_RecordButton3" relativePoint="BOTTOMLEFT"><Offset><AbsDimension x="0" y="-2"/></Offset></Anchor></Anchors>
+                    <Scripts><OnClick>GD_OnRecordClick(this:GetID());</OnClick></Scripts>
+                    <Layers>
+                        <Layer level="BACKGROUND">
+                            <Texture name="$parentSelectedBg"  hidden="true">
+                                <Color r="0.3" g="0.2" b="0.0" a="0.5"/>
+                                <Anchors><Anchor point="TOPLEFT"/><Anchor point="BOTTOMRIGHT"/></Anchors>
+                            </Texture>
+                        </Layer>
+                        <Layer level="HIGHLIGHT">
+                            <Texture >
+                                <Color r="0.3" g="0.2" b="0.0" a="0.5"/>
+                                <Anchors><Anchor point="TOPLEFT"/><Anchor point="BOTTOMRIGHT"/></Anchors>
+                            </Texture>
+                        </Layer>
+                        <Layer level="ARTWORK">
+                            <FontString name="$parentType" inherits="GameFontNormalSmall" justifyH="CENTER">
+                                <Size><AbsDimension x="35" y="14"/></Size>
+                                <Anchors><Anchor point="LEFT"><Offset><AbsDimension x="2" y="0"/></Offset></Anchor></Anchors>
+                            </FontString>
+                            <FontString name="$parentTitle" inherits="GameFontNormalSmall" justifyH="LEFT">
+                                <Size><AbsDimension x="170" y="14"/></Size>
+                                <Anchors><Anchor point="LEFT"><Offset><AbsDimension x="40" y="0"/></Offset></Anchor></Anchors>
+                            </FontString>
+                            <FontString name="$parentTime" inherits="GameFontDisableSmall" justifyH="RIGHT">
+                                <Size><AbsDimension x="55" y="14"/></Size>
+                                <Anchors><Anchor point="RIGHT"><Offset><AbsDimension x="-2" y="0"/></Offset></Anchor></Anchors>
+                            </FontString>
+                        </Layer>
+                    </Layers>
+                </Button>
+
+                <Button name="GD_RecordButton5">
+                    <Size><AbsDimension x="270" y="34"/></Size>
+                    <Anchors><Anchor point="TOPLEFT" relativeTo="GD_RecordButton4" relativePoint="BOTTOMLEFT"><Offset><AbsDimension x="0" y="-2"/></Offset></Anchor></Anchors>
+                    <Scripts><OnClick>GD_OnRecordClick(this:GetID());</OnClick></Scripts>
+                    <Layers>
+                        <Layer level="BACKGROUND">
+                            <Texture name="$parentSelectedBg"  hidden="true">
+                                <Color r="0.3" g="0.2" b="0.0" a="0.5"/>
+                                <Anchors><Anchor point="TOPLEFT"/><Anchor point="BOTTOMRIGHT"/></Anchors>
+                            </Texture>
+                        </Layer>
+                        <Layer level="HIGHLIGHT">
+                            <Texture >
+                                 <Color r="0.3" g="0.2" b="0.0" a="0.5"/>
+                                <Anchors><Anchor point="TOPLEFT"/><Anchor point="BOTTOMRIGHT"/></Anchors>
+                            </Texture>
+                        </Layer>
+                        <Layer level="ARTWORK">
+                            <FontString name="$parentType" inherits="GameFontNormalSmall" justifyH="CENTER">
+                                <Size><AbsDimension x="35" y="14"/></Size>
+                                <Anchors><Anchor point="LEFT"><Offset><AbsDimension x="2" y="0"/></Offset></Anchor></Anchors>
+                            </FontString>
+                            <FontString name="$parentTitle" inherits="GameFontNormalSmall" justifyH="LEFT">
+                                <Size><AbsDimension x="170" y="14"/></Size>
+                                <Anchors><Anchor point="LEFT"><Offset><AbsDimension x="40" y="0"/></Offset></Anchor></Anchors>
+                            </FontString>
+                            <FontString name="$parentTime" inherits="GameFontDisableSmall" justifyH="RIGHT">
+                                <Size><AbsDimension x="55" y="14"/></Size>
+                                <Anchors><Anchor point="RIGHT"><Offset><AbsDimension x="-2" y="0"/></Offset></Anchor></Anchors>
+                            </FontString>
+                        </Layer>
+                    </Layers>
+                </Button>
+
+                <Button name="GD_RecordButton6">
+                    <Size><AbsDimension x="270" y="34"/></Size>
+                    <Anchors><Anchor point="TOPLEFT" relativeTo="GD_RecordButton5" relativePoint="BOTTOMLEFT"><Offset><AbsDimension x="0" y="-2"/></Offset></Anchor></Anchors>
+                    <Scripts><OnClick>GD_OnRecordClick(this:GetID());</OnClick></Scripts>
+                    <Layers>
+                        <Layer level="BACKGROUND">
+                            <Texture name="$parentSelectedBg" hidden="true">
+                                <Color r="0.3" g="0.2" b="0.0" a="0.5"/>
+                                <Anchors><Anchor point="TOPLEFT"/><Anchor point="BOTTOMRIGHT"/></Anchors>
+                            </Texture>
+                        </Layer>
+                        <Layer level="HIGHLIGHT">
+                            <Texture >
+                                <Color r="0.3" g="0.2" b="0.0" a="0.5"/>
+                                <Anchors><Anchor point="TOPLEFT"/><Anchor point="BOTTOMRIGHT"/></Anchors>
+                            </Texture>
+                        </Layer>
+                        <Layer level="ARTWORK">
+                            <FontString name="$parentType" inherits="GameFontNormalSmall" justifyH="CENTER">
+                                <Size><AbsDimension x="35" y="14"/></Size>
+                                <Anchors><Anchor point="LEFT"><Offset><AbsDimension x="2" y="0"/></Offset></Anchor></Anchors>
+                            </FontString>
+                            <FontString name="$parentTitle" inherits="GameFontNormalSmall" justifyH="LEFT">
+                                <Size><AbsDimension x="170" y="14"/></Size>
+                                <Anchors><Anchor point="LEFT"><Offset><AbsDimension x="40" y="0"/></Offset></Anchor></Anchors>
+                            </FontString>
+                            <FontString name="$parentTime" inherits="GameFontDisableSmall" justifyH="RIGHT">
+                                <Size><AbsDimension x="55" y="14"/></Size>
+                                <Anchors><Anchor point="RIGHT"><Offset><AbsDimension x="-2" y="0"/></Offset></Anchor></Anchors>
+                            </FontString>
+                        </Layer>
+                    </Layers>
+                </Button>
+
+                <!-- 分页控制 -->
+                <Button name="GD_PrevPageBtn" inherits="UIPanelButtonTemplate" text="&lt; 上页">
+                    <Size>
+                        <AbsDimension x="70" y="24"/>
+                    </Size>
+                    <Anchors>
+                        <Anchor point="BOTTOMLEFT">
+                            <Offset><AbsDimension x="10" y="10"/></Offset>
+                        </Anchor>
+                    </Anchors>
+                    <Scripts>
+                        <OnClick>GD_OnPrevPage();</OnClick>
+                    </Scripts>
+                    <NormalFont style="GameFontNormalSmall"/>
+                    <HighlightFont style="GameFontHighlightSmall"/>
+                    <DisabledFont style="GameFontDisableSmall"/>
+                </Button>
+
+                <FontString name="GD_PageText" inherits="GameFontNormalSmall" text="第 1/1 页">
+                    <Anchors>
+                        <Anchor point="BOTTOM">
+                            <Offset><AbsDimension x="0" y="16"/></Offset>
+                        </Anchor>
+                    </Anchors>
+                </FontString>
+
+                <Button name="GD_NextPageBtn" inherits="UIPanelButtonTemplate" text="下页 &gt;">
+                    <Size>
+                        <AbsDimension x="70" y="24"/>
+                    </Size>
+                    <Anchors>
+                        <Anchor point="BOTTOMRIGHT">
+                            <Offset><AbsDimension x="-10" y="10"/></Offset>
+                        </Anchor>
+                    </Anchors>
+                    <Scripts>
+                        <OnClick>GD_OnNextPage();</OnClick>
+                    </Scripts>
+                    <NormalFont style="GameFontNormalSmall"/>
+                    <HighlightFont style="GameFontHighlightSmall"/>
+                    <DisabledFont style="GameFontDisableSmall"/>
+                </Button>
+            </Frames>
+        </Frame>
+
+        <!-- ====================================================== -->
+        <!-- 右侧面板：类型选择、标题、内容、元数据、操作按钮           -->
+        <!-- ====================================================== -->
+        <Frame name="GD_RightPanel">
+            <Size>
+                <AbsDimension x="425" y="420"/>
+            </Size>
+            <Anchors>
+                <Anchor point="TOPLEFT" relativeTo="GD_LeftPanel" relativePoint="TOPRIGHT">
+                    <Offset><AbsDimension x="5" y="0"/></Offset>
+                </Anchor>
+            </Anchors>
+
+            <Backdrop bgFile="Interface\AddOns\GameDiary\media\ui\bg-book-left"
+          edgeFile="Interface\Tooltips\UI-Tooltip-Border"
+                    tile="true">
+                <BackgroundInsets>
+                    <AbsInset left="3" right="3" top="3" bottom="3"/>
+                </BackgroundInsets>
+                <TileSize>
+                    <AbsValue val="512"/>
+                </TileSize>
+                <EdgeSize>
+                    <AbsValue val="12"/>
+                </EdgeSize>
+                <BorderColor r="0.4" g="0.3" b="0.1" a="1"/>
+            </Backdrop>
+
+
+            <Layers>
+                <Layer level="ARTWORK">
+                    <!-- 元数据显示（从下面 Frames 里移过来的） -->
+                    <FontString name="GD_MetaDataText" inherits="GameFontDisableSmall" justifyH="LEFT" justifyV="TOP">
+                        <Size>
+                            <AbsDimension x="400" y="55"/>
+                        </Size>
+                        <Anchors>
+                            <Anchor point="TOPLEFT">
+                                <Offset><AbsDimension x="15" y="-330"/></Offset>
+                            </Anchor>
+                        </Anchors>
+                    </FontString>
+
+                    <!-- 无记录提示（从下面 Frames 里移过来的，并加上了 Size） -->
+                    <FontString name="GD_NoRecordText" inherits="GameFontNormal" text="选择一条记录查看详情，或点击「新建」创建记录" hidden="true">
+                        <Size>
+                            <AbsDimension x="380" y="30"/> <!--  必须加 Size！ -->
+                        </Size>
+                        <Anchors>
+                            <Anchor point="CENTER">
+                                <Offset><AbsDimension x="0" y="20"/></Offset>
+                            </Anchor>
+                        </Anchors>
+                        <Color r="0.6" g="0.6" b="0.6"/>
+                    </FontString>
+                </Layer>
+            </Layers>
+          
+
+            <Frames>
+                <!-- 记录类型选择 -->
+                <CheckButton name="GD_TypePitfallBtn" inherits="UICheckButtonTemplate">
+                    <Anchors>
+                        <Anchor point="TOPLEFT">
+                            <Offset><AbsDimension x="15" y="-10"/></Offset>
+                        </Anchor>
+                    </Anchors>
+                    <Scripts>
+                        <OnClick>
+                            if this:GetChecked() then
+                                GD_TypeFunBtn:SetChecked(nil);
+                            end
+                        </OnClick>
+                    </Scripts>
+                    <Layers>
+                        <Layer level="ARTWORK">
+                            <FontString name="$parentLabel" inherits="GameFontNormalSmall" text="坑点">
+                                <Anchors>
+                                    <Anchor point="LEFT" relativePoint="RIGHT">
+                                        <Offset><AbsDimension x="2" y="0"/></Offset>
+                                    </Anchor>
+                                </Anchors>
+                                <Color r="1.0" g="0.27" b="0.27"/>
+                            </FontString>
+                        </Layer>
+                    </Layers>
+                </CheckButton>
+
+                <CheckButton name="GD_TypeFunBtn" inherits="UICheckButtonTemplate">
+                    <Anchors>
+                        <Anchor point="LEFT" relativeTo="GD_TypePitfallBtn" relativePoint="RIGHT">
+                            <Offset><AbsDimension x="40" y="0"/></Offset>
+                        </Anchor>
+                    </Anchors>
+                    <Scripts>
+                        <OnClick>
+                            if this:GetChecked() then
+                                GD_TypePitfallBtn:SetChecked(nil);
+                            end
+                        </OnClick>
+                    </Scripts>
+                    <Layers>
+                        <Layer level="ARTWORK">
+                            <FontString name="$parentLabel" inherits="GameFontNormalSmall" text="趣事">
+                                <Anchors>
+                                    <Anchor point="LEFT" relativePoint="RIGHT">
+                                        <Offset><AbsDimension x="2" y="0"/></Offset>
+                                    </Anchor>
+                                </Anchors>
+                                <Color r="0.27" g="1.0" b="0.27"/>
+                            </FontString>
+                        </Layer>
+                    </Layers>
+                </CheckButton>
+
+                <!-- 标题输入 -->
+                <Frame name="GD_TitleFrame">
+                    <Size>
+                        <AbsDimension x="400" y="30"/>
+                    </Size>
+                    <Anchors>
+                        <Anchor point="TOPLEFT">
+                            <Offset><AbsDimension x="15" y="-40"/></Offset>
+                        </Anchor>
+                    </Anchors>
+                    <Layers>
+                        <Layer level="ARTWORK">
+                            <FontString name="GD_TitleLabel" inherits="GameFontNormalSmall" text="标题:">
+                                <Anchors>
+                                    <Anchor point="TOPLEFT">
+                                        <Offset><AbsDimension x="0" y="-10"/></Offset>
+                                    </Anchor>
+                                </Anchors>
+                            </FontString>
+                        </Layer>
+                    </Layers>
+                    <Frames>
+                        <EditBox name="GD_TitleEditBox" letters="100" autoFocus="false" historyLines="0">
+                            <Size>
+                                <AbsDimension x="340" y="28"/>
+                            </Size>
+                            <Anchors>
+                                <Anchor point="TOPLEFT">
+                                    <Offset><AbsDimension x="40" y="-2"/></Offset>
+                                </Anchor>
+                            </Anchors>
+                            <FontString inherits="GameFontNormal"/>
+                            <Scripts>
+                                <OnEscapePressed>this:ClearFocus();</OnEscapePressed>
+                            </Scripts>
+                             <TextInsets>
+                                <AbsInset left="15" right="8" top="2" bottom="2"/>
+                            </TextInsets>
+                            <Layers>
+                                <Layer level="BACKGROUND">
+                                    <Texture file="Interface\ChatFrame\UI-ChatInputBorder-Left">
+                                        <Size><AbsDimension x="340" y="30"/></Size>
+                                        <Anchors><Anchor point="TOPLEFT"/></Anchors>
+                                        <TexCoords left="0" right="1" top="0" bottom="1"/>
+                                    </Texture>
+                                </Layer>
+                            </Layers>
+                        </EditBox>
+                    </Frames>
+                </Frame>
+
+                <!-- 内容输入 -->
+                <Frame name="GD_ContentFrame">
+                    <Size>
+                        <AbsDimension x="400" y="220"/>
+                    </Size>
+                    <Anchors>
+                        <Anchor point="TOPLEFT">
+                            <Offset><AbsDimension x="15" y="-80"/></Offset>
+                        </Anchor>
+                    </Anchors>
+                    <Layers>
+                        <Layer level="ARTWORK">
+                            <FontString name="GD_ContentLabel" inherits="GameFontNormalSmall" text="内容:">
+                                <Anchors>
+                                    <Anchor point="TOPLEFT">
+                                        <Offset><AbsDimension x="0" y="0"/></Offset>
+                                    </Anchor>
+                                </Anchors>
+                            </FontString>
+                        </Layer>
+                    </Layers>
+                    <Frames>
+                         <!-- 内容输入（修改：添加ScrollFrame） -->
+                            <ScrollFrame name="GD_ContentScrollFrame">
+                                <Size>
+                                    <AbsDimension x="400" y="220"/> <!-- 固定高度，内容通过滚动查看 -->
+                                </Size>
+                                <Anchors>
+                                    <Anchor point="TOPLEFT">
+                                        <Offset><AbsDimension x="0" y="-20"/></Offset>
+                                    </Anchor>
+                                </Anchors>
+                                <ScrollChild>
+                                    <EditBox name="GD_ContentEditBox" multiLine="true" letters="2000" autoFocus="false" historyLines="0">
+                                        <Size>
+                                            <AbsDimension x="380" y="220"/> <!-- 宽度自适应，高度由ScrollFrame限制 -->
+                                        </Size>
+                                        <Anchors>
+                                            <Anchor point="TOPLEFT"/>
+                                        </Anchors>
+                                        <FontString inherits="GameFontNormal"/>
+                                        <Scripts>
+                                            <!-- <OnMouseWheel>GD_ContentEditBox_OnMouseWheel(arg1);</OnMouseWheel> -->
+                                            <OnEscapePressed>this:ClearFocus();</OnEscapePressed>
+                                        </Scripts>
+                                        <TextInsets>
+                                            <AbsInset left="10" right="8" top="2" bottom="2"/>
+                                        </TextInsets>
+                                        <Layers>
+                                            <Layer level="BACKGROUND">
+                                                <Texture>
+                                                    <Color r="0" g="0" b="0" a="0.4"/>
+                                                    <Anchors><Anchor point="TOPLEFT"/><Anchor point="BOTTOMRIGHT"/></Anchors>
+                                                </Texture>
+                                            </Layer>
+                                        </Layers>
+                                    </EditBox>
+                                </ScrollChild>
+                                <ScrollBars>
+                                    <ScrollBar name="$parentScrollBar" inherits="UIPanelScrollBarTemplate">
+                                        <Anchors>
+                                            <Anchor point="TOPRIGHT">
+                                                <Offset><AbsDimension x="-5" y="0"/></Offset>
+                                            </Anchor>
+                                            <Anchor point="BOTTOMRIGHT">
+                                                <Offset><AbsDimension x="-5" y="0"/></Offset>
+                                            </Anchor>
+                                        </Anchors>
+                                    </ScrollBar>
+                                </ScrollBars>
+                            </ScrollFrame>
+                    </Frames>
+                </Frame>
+
+             
+
+                <!-- 操作按钮行 -->
+                <Button name="GD_NewRecordBtn" inherits="UIPanelButtonTemplate" text="新建">
+                    <Size>
+                        <AbsDimension x="65" y="26"/>
+                    </Size>
+                    <Anchors>
+                        <Anchor point="BOTTOMLEFT">
+                            <Offset><AbsDimension x="15" y="12"/></Offset>
+                        </Anchor>
+                    </Anchors>
+                    <Scripts>
+                        <OnClick>GD_OnNewRecord();</OnClick>
+                    </Scripts>
+                    <NormalFont style="GameFontNormalSmall"/>
+                    <HighlightFont style="GameFontHighlightSmall"/>
+                    <DisabledFont style="GameFontDisableSmall"/>
+                </Button>
+
+                <Button name="GD_SaveBtn" inherits="UIPanelButtonTemplate" text="保存">
+                    <Size>
+                        <AbsDimension x="65" y="26"/>
+                    </Size>
+                    <Anchors>
+                        <Anchor point="LEFT" relativeTo="GD_NewRecordBtn" relativePoint="RIGHT">
+                            <Offset><AbsDimension x="8" y="0"/></Offset>
+                        </Anchor>
+                    </Anchors>
+                    <Scripts>
+                        <OnClick>GD_OnSave();</OnClick>
+                    </Scripts>
+                    <NormalFont style="GameFontNormalSmall"/>
+                    <HighlightFont style="GameFontHighlightSmall"/>
+                    <DisabledFont style="GameFontDisableSmall"/>
+                </Button>
+
+                <Button name="GD_DeleteBtn" inherits="UIPanelButtonTemplate" text="删除">
+                    <Size>
+                        <AbsDimension x="65" y="26"/>
+                    </Size>
+                    <Anchors>
+                        <Anchor point="LEFT" relativeTo="GD_SaveBtn" relativePoint="RIGHT">
+                            <Offset><AbsDimension x="8" y="0"/></Offset>
+                        </Anchor>
+                    </Anchors>
+                    <Scripts>
+                        <OnClick>GD_OnDeleteRecord();</OnClick>
+                    </Scripts>
+                    <NormalFont style="GameFontNormalSmall"/>
+                    <HighlightFont style="GameFontHighlightSmall"/>
+                    <DisabledFont style="GameFontDisableSmall"/>
+                </Button>
+
+                <Button name="GD_ExportRecordBtn" inherits="UIPanelButtonTemplate" text="导出选中">
+                    <Size>
+                        <AbsDimension x="80" y="26"/>
+                    </Size>
+                    <Anchors>
+                        <Anchor point="LEFT" relativeTo="GD_DeleteBtn" relativePoint="RIGHT">
+                            <Offset><AbsDimension x="8" y="0"/></Offset>
+                        </Anchor>
+                    </Anchors>
+                    <Scripts>
+                        <OnClick>GD_OnExportRecord();</OnClick>
+                    </Scripts>
+                    <NormalFont style="GameFontNormalSmall"/>
+                    <HighlightFont style="GameFontHighlightSmall"/>
+                    <DisabledFont style="GameFontDisableSmall"/>
+                </Button>
+            </Frames>
+        </Frame>
+
+        <!-- ====================================================== -->
+        <!-- 底部栏：导出/导入 + 统计信息                              -->
+        <!-- ====================================================== -->
+      
+
+        <Frame name="GD_BottomBar">
+            <Size>
+                <AbsDimension x="730" y="40"/>
+            </Size>
+            <Anchors>
+                <Anchor point="BOTTOMLEFT">
+                    <Offset><AbsDimension x="15" y="15"/></Offset>
+                </Anchor>
+            </Anchors>
+            
+            <!-- 1. Layers 和 Frames 是平级的，放在外面 -->
+            <Layers>
+                <Layer level="ARTWORK">
+                    <FontString name="GD_StatsText" inherits="GameFontNormalSmall" text="暂无日记本" justifyH="RIGHT">
+                        <Size>
+                            <AbsDimension x="300" y="20"/>
+                        </Size>
+                        <Anchors>
+                            <Anchor point="RIGHT" relativeTo="GD_ImportBtn" relativePoint="RIGHT">
+                                <Offset><AbsDimension x="300" y="0"/></Offset>
+                            </Anchor>
+                        </Anchors>
+                    </FontString>
+                </Layer>
+            </Layers>
+
+            <!-- 2. 按钮放在 Frames 里 -->
+            <Frames>
+                <Button name="GD_ExportAllBtn" inherits="UIPanelButtonTemplate" text="导出整本日记">
+                    <Size>
+                        <AbsDimension x="110" y="26"/>
+                    </Size>
+                    <Anchors>
+                        <Anchor point="LEFT">
+                            <Offset><AbsDimension x="0" y="0"/></Offset>
+                        </Anchor>
+                    </Anchors>
+                    <Scripts>
+                        <OnClick>GD_OnExportAll();</OnClick>
+                    </Scripts>
+                    <NormalFont style="GameFontNormalSmall"/>
+                    <HighlightFont style="GameFontHighlightSmall"/>
+                    <DisabledFont style="GameFontDisableSmall"/>
+                </Button>
+                <Button name="GD_ImportBtn" inherits="UIPanelButtonTemplate" text="导入日记">
+                    <Size>
+                        <AbsDimension x="90" y="26"/>
+                    </Size>
+                    <Anchors>
+                        <Anchor point="LEFT" relativeTo="GD_ExportAllBtn" relativePoint="RIGHT">
+                            <Offset><AbsDimension x="10" y="0"/></Offset>
+                        </Anchor>
+                    </Anchors>
+                    <Scripts>
+                        <OnClick>GD_OnImport();</OnClick>
+                    </Scripts>
+                    <NormalFont style="GameFontNormalSmall"/>
+                    <HighlightFont style="GameFontHighlightSmall"/>
+                    <DisabledFont style="GameFontDisableSmall"/>
+                </Button>
+            </Frames>
+        </Frame>
+
+
+    </Frames>
+</Frame>
+
+<!-- ============================================================ -->
+<!-- 导出对话框（独立于主框架）                                       -->
+<!-- ============================================================ -->
+<Frame name="GD_ExportFrame" toplevel="true" movable="true"
+       enableMouse="true" parent="UIParent" hidden="true"
+       frameStrata="DIALOG" clampedToScreen="true" clippedChildren="true">
+    <Size>
+        <AbsDimension x="540" y="460"/>
+    </Size>
+    <Anchors>
+        <Anchor point="CENTER"/>
+    </Anchors>
+    <Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background"
+              edgeFile="Interface\DialogFrame\UI-DialogBox-Border"
+              tile="true">
+        <BackgroundInsets>
+            <AbsInset left="11" right="12" top="12" bottom="11"/>
+        </BackgroundInsets>
+        <TileSize>
+            <AbsValue val="32"/>
+        </TileSize>
+        <EdgeSize>
+            <AbsValue val="32"/>
+        </EdgeSize>
+    </Backdrop>
+    <Scripts>
+        <OnDragStart>this:StartMoving();</OnDragStart>
+        <OnDragStop>this:StopMovingOrSizing();</OnDragStop>
+    </Scripts>
+
+    <Layers>
+        <Layer level="ARTWORK">
+            <FontString name="GD_ExportFrameTitle" inherits="GameFontNormalLarge" text="导出日记">
+                <Anchors>
+                    <Anchor point="TOPLEFT">
+                        <Offset><AbsDimension x="20" y="-15"/></Offset>
+                    </Anchor>
+                </Anchors>
+            </FontString>
+            <FontString name="GD_ExportFrameHint" inherits="GameFontDisableSmall"
+                        text="请使用 Ctrl+A 全选，Ctrl+C 复制以下文本，然后分享给其他玩家：">
+                <Anchors>
+                    <Anchor point="TOPLEFT">
+                        <Offset><AbsDimension x="20" y="-40"/></Offset>
+                    </Anchor>
+                </Anchors>
+            </FontString>
+        </Layer>
+    </Layers>
+
+    <Frames>
+        <Button name="GD_ExportFrameCloseBtn" inherits="UIPanelCloseButton">
+            <Anchors>
+                <Anchor point="TOPRIGHT">
+                    <Offset><AbsDimension x="-5" y="-5"/></Offset>
+                </Anchor>
+            </Anchors>
+            <Scripts>
+                <OnClick>GD_CloseExportFrame();</OnClick>
+            </Scripts>
+        </Button>
+
+        <ScrollFrame name="GD_ExportScrollFrame">
+            <Size>
+                <AbsDimension x="500" y="330"/>
+            </Size>
+            <Anchors>
+                <Anchor point="TOPLEFT">
+                    <Offset><AbsDimension x="15" y="-60"/></Offset>
+                </Anchor>
+            </Anchors>
+            <ScrollChild>
+                <EditBox name="GD_ExportFrameEditBox" multiLine="true" letters="0" autoFocus="false" historyLines="0">
+                    <Size>
+                        <AbsDimension x="465" y="1"/>
+                    </Size>
+                    <Anchors>
+                        <Anchor point="TOPLEFT"/>
+                    </Anchors>
+                    <FontString inherits="GameFontNormalSmall"/>
+                    <Scripts>
+                        <OnEditFocusGained>GD_ExportEditBox_OnEditFocusGained();</OnEditFocusGained>
+                        <OnEscapePressed>GD_CloseExportFrame();</OnEscapePressed>
+                        <!-- 这里不要添加 OnTextChanged 脚本，避免错误 -->
+                    </Scripts>
+                    <Layers>
+                        <Layer level="BACKGROUND">
+                            <Texture file="Interface\Buttons\WHITE8X8">
+                                <Color r="0" g="0" b="0" a="0.5"/>
+                                <Anchors><Anchor point="TOPLEFT"/><Anchor point="BOTTOMRIGHT"/></Anchors>
+                            </Texture>
+                        </Layer>
+                    </Layers>
+                </EditBox>
+            </ScrollChild>
+            <ScrollBars>
+                <ScrollBar name="$parentScrollBar" inherits="UIPanelScrollBarTemplate">
+                    <Anchors>
+                        <Anchor point="TOPRIGHT">
+                            <Offset><AbsDimension x="-5" y="0"/></Offset>
+                        </Anchor>
+                        <Anchor point="BOTTOMRIGHT">
+                            <Offset><AbsDimension x="-5" y="0"/></Offset>
+                        </Anchor>
+                    </Anchors>
+                </ScrollBar>
+            </ScrollBars>
+        </ScrollFrame>
+
+        <Button name="GD_ExportFrameCloseBtn2" inherits="UIPanelButtonTemplate" text="关闭">
+            <Size>
+                <AbsDimension x="80" y="26"/>
+            </Size>
+            <Anchors>
+                <Anchor point="BOTTOMRIGHT">
+                    <Offset><AbsDimension x="-15" y="15"/></Offset>
+                </Anchor>
+            </Anchors>
+            <Scripts>
+                <OnClick>GD_CloseExportFrame();</OnClick>
+            </Scripts>
+        </Button>
+    </Frames>
+</Frame>
+
+
+
+<!-- ============================================================ -->
+<!-- 导入对话框（独立于主框架）                                       -->
+<!-- ============================================================ -->
+<Frame name="GD_ImportFrame" toplevel="true" movable="true"
+       enableMouse="true" parent="UIParent" hidden="true"
+       frameStrata="DIALOG" clampedToScreen="true" clippedChildren="true">
+    <Size>
+        <AbsDimension x="540" y="460"/>
+    </Size>
+    <Anchors>
+        <Anchor point="CENTER"/>
+    </Anchors>
+    <Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background"
+              edgeFile="Interface\DialogFrame\UI-DialogBox-Border"
+              tile="true">
+        <BackgroundInsets>
+            <AbsInset left="11" right="12" top="12" bottom="11"/>
+        </BackgroundInsets>
+        <TileSize>
+            <AbsValue val="32"/>
+        </TileSize>
+        <EdgeSize>
+            <AbsValue val="32"/>
+        </EdgeSize>
+    </Backdrop>
+    <Scripts>
+        <OnDragStart>this:StartMoving();</OnDragStart>
+        <OnDragStop>this:StopMovingOrSizing();</OnDragStop>
+    </Scripts>
+
+    <Layers>
+        <Layer level="ARTWORK">
+            <FontString name="GD_ImportFrameTitle" inherits="GameFontNormalLarge" text="导入日记">
+                <Anchors>
+                    <Anchor point="TOPLEFT">
+                        <Offset><AbsDimension x="20" y="-15"/></Offset>
+                    </Anchor>
+                </Anchors>
+            </FontString>
+            <FontString name="GD_ImportFrameHint" inherits="GameFontDisableSmall"
+                        text="请将其他玩家分享的日记文本粘贴到下方（支持多段数据，每行一段）：">
+                <Anchors>
+                    <Anchor point="TOPLEFT">
+                        <Offset><AbsDimension x="20" y="-40"/></Offset>
+                    </Anchor>
+                </Anchors>
+            </FontString>
+        </Layer>
+    </Layers>
+
+    <Frames>
+        <Button name="GD_ImportFrameCloseBtn" inherits="UIPanelCloseButton">
+            <Anchors>
+                <Anchor point="TOPRIGHT">
+                    <Offset><AbsDimension x="-5" y="-5"/></Offset>
+                </Anchor>
+            </Anchors>
+            <Scripts>
+                <OnClick>GD_CloseImportFrame();</OnClick>
+            </Scripts>
+        </Button>
+
+        <!-- 滚动区域 -->
+        <ScrollFrame name="GD_ImportScrollFrame">
+            <Size>
+                <AbsDimension x="500" y="330"/>
+            </Size>
+            <Anchors>
+                <Anchor point="TOPLEFT">
+                    <Offset><AbsDimension x="15" y="-60"/></Offset>
+                </Anchor>
+            </Anchors>
+            <ScrollChild>
+                <EditBox name="GD_ImportFrameEditBox" multiLine="true" letters="0" autoFocus="false" historyLines="0">
+                    <Size>
+                        <AbsDimension x="465" y="1"/>  <!-- 足够高以容纳大量文本 -->
+                    </Size>
+                    <Anchors>
+                        <Anchor point="TOPLEFT"/>
+                    </Anchors>
+                    <FontString inherits="GameFontNormalSmall"/>
+                    <Scripts>
+                        <OnEscapePressed>GD_CloseImportFrame();</OnEscapePressed>
+                        <!-- 不需要额外脚本，滚动条会自动工作 -->
+                    </Scripts>
+                    <Layers>
+                        <Layer level="BACKGROUND">
+                            <Texture >
+                                <Color r="0" g="1" b="0" a="0.6"/>
+                                <Anchors><Anchor point="TOPLEFT"/><Anchor point="BOTTOMRIGHT"/></Anchors>
+                            </Texture>
+                        </Layer>
+                    </Layers>
+                </EditBox>
+            </ScrollChild>
+            <ScrollBars>
+                <ScrollBar name="$parentScrollBar" inherits="UIPanelScrollBarTemplate">
+                    <Anchors>
+                        <Anchor point="TOPRIGHT">
+                            <Offset><AbsDimension x="-5" y="0"/></Offset>
+                        </Anchor>
+                        <Anchor point="BOTTOMRIGHT">
+                            <Offset><AbsDimension x="-5" y="0"/></Offset>
+                        </Anchor>
+                    </Anchors>
+                </ScrollBar>
+            </ScrollBars>
+        </ScrollFrame>
+
+        <Button name="GD_ImportFrameImportBtn" inherits="UIPanelButtonTemplate" text="导入">
+            <Size>
+                <AbsDimension x="80" y="26"/>
+            </Size>
+            <Anchors>
+                <Anchor point="BOTTOMRIGHT">
+                    <Offset><AbsDimension x="-100" y="15"/></Offset>
+                </Anchor>
+            </Anchors>
+            <Scripts>
+                <OnClick>GD_DoImport();</OnClick>
+            </Scripts>
+        </Button>
+
+        <Button name="GD_ImportFrameCancelBtn" inherits="UIPanelButtonTemplate" text="取消">
+            <Size>
+                <AbsDimension x="80" y="26"/>
+            </Size>
+            <Anchors>
+                <Anchor point="BOTTOMRIGHT">
+                    <Offset><AbsDimension x="-15" y="15"/></Offset>
+                </Anchor>
+            </Anchors>
+            <Scripts>
+                <OnClick>GD_CloseImportFrame();</OnClick>
+            </Scripts>
+        </Button>
+    </Frames>
+</Frame>
+
+</Ui>
