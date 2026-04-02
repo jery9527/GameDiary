@@ -17,7 +17,7 @@ GDx1FPx1F4x1F4x1F51270x1FMU==
 
 ## 🔧 插件安装
 1. 下载插件文件夹`GameDiary`
-2. 将文件夹放入乌龟服安装目录：`_classic_era_1_18_1/Interface/AddOns/`
+2. 将文件夹放入乌龟服安装目录：`/Interface/AddOns/`
 3. 启动游戏，在**角色选择界面**勾选「GameDiary」插件（若提示过期，勾选「加载过期插件」）
 4. 进入游戏后，通过小地图按钮或斜杠命令打开插件
 
