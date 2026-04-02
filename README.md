@@ -4,3 +4,9 @@ This is a plugin for Turtle WoW 1.18.1. It lets you share all the tricky situati
 <img width="1053" height="768" alt="gamediary" src="https://github.com/user-attachments/assets/24c9e8c4-ba3b-41db-b71b-abddd78a5799" />
 
 这是一个乌龟服1.18.1版本的插件，主要就是用来分享游戏过程中遇到的各种坑和有趣的事，还可以分享其他玩家，尤其是新手玩家，可以学习，能有更好的游戏体验。
+# 导入字符串
+这串字符串就是他人导出的日记字符串，复制后，直接导入即可。字符串形式如下：
+```GDx1FPx1F1x1F4x1F51270x1FTFLml6XorrB4MUVmdW54MUbml6XorrDmj5Lku7blvIDlj5Hlrozmr5V4MUYyMDI25bm0NOaciDLml6Uw54K55oiR5LiA5Liq54yO5Lq677yM5a6M5oiQ5LqG5oiR55qE56ys5LiA5Liq6a2U5YW95LiW55WM5o+S5Lu255qE5byA5Y+R5bel5L2c77yM5ZOI5ZOI5ZOI
+GDx1FPx1F2x1F4x1F51270x1F44CC5LiN5piv5b6I6Zq+77yM5L2G5Lmf5LiN566A5Y2V77yM5ZyoQUnnmoTluK7liqnkuIvvvIzmiJHlrp7njrDkuobmiJHnmoTmhL/mnJvjgILliqDmsrnllYrvvIHvvIHvvIEKCk5lb29lbu+8jOi/meaYr+aIkeWcqOS5jOm+n+acjeS4reeahExS5ZCN5a2X77yM
+GDx1FPx1F3x1F4x1F51270x1F5oiR5ZyoR+acjeOAgngxRk5lb29lbngxRuS6uuexu3gxRueMjuS6ungxRjU3eDFG6I2G5qOY6LC3eDFG6I2G5qOY6LC3eDFGMC4yNjk3MTAxNTMzNDEyOXgxRjAuNzczMzIzNTM1OTE5MTl4MUYyMDI2MDQwMjAwMjM1OXgxRjIwMjYwNDAyMDAyMzU5eDFGMTc6MjN4
+GDx1FPx1F4x1F4x1F51270x1FMU==
