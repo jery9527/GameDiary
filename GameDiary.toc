@@ -1,0 +1,15 @@
+## Interface: 11200
+## Title: GameDiary |cFF00FF00[游戏日记本]|r
+## Title-zhCN: GameDiary |cFF00FF00[游戏日记本]|r
+## Notes: Record game pitfalls and fun moments, support sharing between players.
+## Notes-zhCN: 记录游戏中的坑点与趣事，支持玩家间分享。
+## Author:  Neooen
+## Version: 1.0.0
+## SavedVariables: GameDiaryDB
+## DefaultState: enabled
+
+GameDiary_Config.lua
+GameDiary_Utils.lua
+GameDiary.lua
+GameDiary.xml
+GameDiary_Minimap.lua
